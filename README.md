@@ -1,6 +1,13 @@
 # IconForge — Нативный генератор иконок для Windows 11
 
 **IconForge** — это легкое нативное Windows-приложение (утилита), разработанное на фреймворке **WinUI 3 (Windows App SDK)** и C#. Оно предназначено для пакетной генерации наборов иконок для Windows (`.ico`, `Assets`) и Android (`Adaptive Icons`) из одного исходного изображения (формата PNG или SVG).
+## Интерфейс приложения
+
+![Скриншот 1](Screenshots/screenshot1.png)
+![Скриншот 2](Screenshots/screenshot2.png)
+![Скриншот 3](Screenshots/screenshot3.png)
+![Скриншот 4](Screenshots/screenshot4.png)
+![Скриншот 5](Screenshots/screenshot5.png)
 
 ---
 
