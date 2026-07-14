@@ -1,15 +1,6 @@
-[ English ](GUIDE.md) • [ Русский ](GUIDE_RU.md) • [ Deutsch ](GUIDE_DE.md)
-
 # IconForge User Guide
 
 Welcome to the **IconForge** user guide. This document provides step-by-step instructions and technical details on how to get the most out of the application.
-
----
-
-<p align="center">
-  <img src="https://raw.githubusercontent.com/Almanex/icoboo/main/Screenshots/cover.png" alt="IconForge main" width="49%" />
-  <img src="https://raw.githubusercontent.com/Almanex/icoboo/main/Screenshots/editor.png" alt="IconForge settings" width="49%" />
-</p>
 
 ---
 

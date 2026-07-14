@@ -1,5 +1,3 @@
-[ English ](README.md) • [ Русский ](docs/README_RU.md) • [ Deutsch ](docs/README_DE.md)
-
 # IconForge
 
 *Native icon generator for Windows 11*
@@ -10,17 +8,11 @@
 [![UI: WinUI 3](https://img.shields.io/badge/UI-WinUI%203-blue)](https://learn.microsoft.com/windows/apps/winui/winui3/)
 [![Share](https://img.shields.io/twitter/url?style=social&url=https%3A%2F%2Fgithub.com%2FAlmanex%2Ficoboo)](https://twitter.com/intent/tweet?text=Check%20out%20IconForge%20-%20A%20native%20icon%20generator%20for%20Windows%2011!&url=https%3A%2F%2Fgithub.com%2FAlmanex%2Ficoboo)
 
-<p align="center">
-  <img src="https://raw.githubusercontent.com/Almanex/icoboo/main/Screenshots/cover.png" alt="IconForge main" width="49%" />
-  <img src="https://raw.githubusercontent.com/Almanex/icoboo/main/Screenshots/editor.png" alt="IconForge settings" width="49%" />
-</p>
-
----
-
 IconForge is a lightweight native Windows application developed on the WinUI 3 (Windows App SDK) framework and C#, supporting 3 languages (English, Russian, German) out of the box. It is designed for batch generation of icon sets for Windows (`.ico`, `Assets`) and Android (`Adaptive Icons`) from a single source image in PNG or SVG format.
 
 For a detailed walkthrough of all options and features, see the [User Guide](docs/GUIDE.md).
 
+---
 
 ## Main Features
 

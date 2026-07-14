@@ -1,15 +1,6 @@
-[ English ](GUIDE.md) • [ Русский ](GUIDE_RU.md) • [ Deutsch ](GUIDE_DE.md)
-
 # IconForge Benutzerhandbuch
 
 Willkommen beim Benutzerhandbuch für **IconForge**. Dieses Dokument bietet Schritt-für-Schritt-Anleitungen und technische Details, um die Anwendung optimal zu nutzen.
-
----
-
-<p align="center">
-  <img src="https://raw.githubusercontent.com/Almanex/icoboo/main/Screenshots/cover.png" alt="IconForge main" width="49%" />
-  <img src="https://raw.githubusercontent.com/Almanex/icoboo/main/Screenshots/editor.png" alt="IconForge settings" width="49%" />
-</p>
 
 ---
 
@@ -81,7 +72,7 @@ Wenn Sie IconForge aus dem Quellcode kompilieren oder eine nicht signierte Binä
 Diese Warnung ist Standard für kostenlose Open-Source-Software, die nicht über ein kostenpflichtiges digitales Codesignaturzertifikat verfügt (das jährlich mehrere hundert Dollar kostet). Dies bedeutet nicht, dass die Anwendung unsicher ist.
 
 ### So umgehen Sie die Warnung:
-1. Klicken Sie im SmartScreen-Fenster auf den Link **"Weitere Informationen"** (oder **"More info"**).
+1. Klicken Sie im SmartScreen-Fenster auf den Link **"Weitere Informationen" (oder "More info").**
 2. Der Name des Herausgebers wird als *Unbekannter Herausgeber* angezeigt.
-3. Klicken Sie auf die Schaltfläche **"Trotzdem ausführen"** (oder **"Run anyway"**), die unten im Fenster angezeigt wird.
+3. Klicken Sie auf die Schaltfläche **"Trotzdem ausführen" (oder "Run anyway"),** die unten im Fenster angezeigt wird.
 4. Die Anwendung startet normal und die Warnung wird bei zukünftigen Starts nicht mehr angezeigt.
