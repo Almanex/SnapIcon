@@ -1,4 +1,4 @@
-﻿using Windows.ApplicationModel;
+using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
@@ -29,7 +29,60 @@ public partial class App : Application
     /// </summary>
     public App()
     {
+        EnsureResourcesPriExtracted();
         InitializeComponent();
+    }
+
+    private static void EnsureResourcesPriExtracted()
+    {
+        try
+        {
+            string baseDir = System.AppContext.BaseDirectory;
+            string targetPriPath = System.IO.Path.Combine(baseDir, "resources.pri");
+            
+            if (System.IO.File.Exists(targetPriPath))
+            {
+                return;
+            }
+
+            // 1. Try embedded manifest resource
+            using (var stream = typeof(App).Assembly.GetManifestResourceStream("IconForge.resources.pri"))
+            {
+                if (stream != null)
+                {
+                    using (var fileStream = System.IO.File.Create(targetPriPath))
+                    {
+                        stream.CopyTo(fileStream);
+                        return;
+                    }
+                }
+            }
+
+            // 2. Try .NET SingleFile self-extracted directory
+            string asmLocation = typeof(App).Assembly.Location;
+            if (!string.IsNullOrEmpty(asmLocation))
+            {
+                string asmDir = System.IO.Path.GetDirectoryName(asmLocation)!;
+                string sourcePriPath = System.IO.Path.Combine(asmDir, "resources.pri");
+                if (System.IO.File.Exists(sourcePriPath) && sourcePriPath != targetPriPath)
+                {
+                    System.IO.File.Copy(sourcePriPath, targetPriPath, true);
+                    return;
+                }
+            }
+
+            // 3. Fallback: search temp directory for bundled resources.pri
+            string tempDir = System.IO.Path.GetTempPath();
+            string[] foundFiles = System.IO.Directory.GetFiles(tempDir, "resources.pri", System.IO.SearchOption.AllDirectories);
+            if (foundFiles.Length > 0 && System.IO.File.Exists(foundFiles[0]))
+            {
+                System.IO.File.Copy(foundFiles[0], targetPriPath, true);
+            }
+        }
+        catch
+        {
+            // Ignore if directory is read-only
+        }
     }
 
     /// <summary>

@@ -81,4 +81,11 @@
     <IncludeAllContentForSelfExtract Condition="'$(Configuration)' != 'Debug'">True</IncludeAllContentForSelfExtract>
     <SatelliteResourceLanguages>en-US;ru-RU;de-DE</SatelliteResourceLanguages>
   </PropertyGroup>
+
+  <!-- Target to bundle generated PRI file inside single-file executable to prevent crashes when renamed -->
+  <Target Name="BundlePriInSingleFile" BeforeTargets="GenerateSingleFileBundle">
+    <ItemGroup>
+      <ResolvedFileToPublish Include="$(TargetDir)IconForge.pri" RelativePath="resources.pri" Condition="Exists('$(TargetDir)IconForge.pri')" />
+    </ItemGroup>
+  </Target>
 </Project>
