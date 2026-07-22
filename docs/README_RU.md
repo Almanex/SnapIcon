@@ -6,9 +6,9 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![Platform: Windows](https://img.shields.io/badge/Platform-Windows%2010%20%2F%2011-blue)](https://www.microsoft.com/windows)
-[![Framework: .NET 8.0](https://img.shields.io/badge/Framework-.NET%208.0-blue)](https://dotnet.microsoft.com/download)
+[![Framework: .NET 10.0](https://img.shields.io/badge/Framework-.NET%2010.0-blue)](https://dotnet.microsoft.com/download)
 [![UI: WinUI 3](https://img.shields.io/badge/UI-WinUI%203-blue)](https://learn.microsoft.com/windows/apps/winui/winui3/)
-[![Release: v1.0.3](https://img.shields.io/badge/Release-v1.0.3-brightgreen)](https://github.com/Almanex/icoboo/releases/tag/v1.0.3)
+[![Release: v1.0.3](https://img.shields.io/badge/Release-v1.0.3-brightgreen)](https://github.com/Almanex/IconForge/releases/tag/v1.0.3)
 
 IconForge — это легкое нативное приложение для Windows 11, разработанное на языке C# и фреймворке WinUI 3 (Windows App SDK). Приложение поддерживает 3 языка интерфейса (русский, английский, немецкий) и предназначено для автоматической генерации пакетов иконок для Windows (`.ico`, `Assets`), Web (`Favicon Pack`), macOS (`.icns`) и Android (`Adaptive Icons`) из одного исходного файла PNG, SVG или ICO.
 

@@ -129,7 +129,7 @@
     <value>Windows Context Menu</value>
   </data>
   <data name="ContextMenuSubtext.Text" xml:space="preserve">
-    <value>Add "Generate icons in IconForge" item to Explorer context menu</value>
+    <value>Add 'Generate icons in IconForge' to Explorer context menu (Win11: Shift+F10 / Show more options)</value>
   </data>
   <data name="ProgressIdleText.Text" xml:space="preserve">
     <value>Waiting...</value>
@@ -267,7 +267,7 @@
     <value>About IconForge</value>
   </data>
   <data name="AboutVersion" xml:space="preserve">
-    <value>Version 1.0.2 (WinUI 3 / .NET 8)</value>
+    <value>Version 1.0.3 (WinUI 3 / .NET 10)</value>
   </data>
   <data name="AboutDescription" xml:space="preserve">
     <value>Native multi-format icon package generator for Windows, Web, macOS, and Android.</value>

@@ -129,7 +129,7 @@
     <value>Контекстное меню Windows</value>
   </data>
   <data name="ContextMenuSubtext.Text" xml:space="preserve">
-    <value>Добавить в контекстное меню Explorer пункт 'Сгенерировать иконки в IconForge'</value>
+    <value>Добавить пункт 'Сгенерировать иконки в IconForge' в контекстное меню Explorer (Win11: Shift+F10 / Показать доп. параметры)</value>
   </data>
   <data name="ProgressIdleText.Text" xml:space="preserve">
     <value>Ожидание...</value>
@@ -267,7 +267,7 @@
     <value>О программе IconForge</value>
   </data>
   <data name="AboutVersion" xml:space="preserve">
-    <value>Версия 1.0.2 (WinUI 3 / .NET 8)</value>
+    <value>Версия 1.0.3 (WinUI 3 / .NET 10)</value>
   </data>
   <data name="AboutDescription" xml:space="preserve">
     <value>Нативный мультиформатный генератор иконных пакетов для Windows, Web, macOS и Android.</value>

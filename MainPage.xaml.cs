@@ -699,7 +699,7 @@ namespace IconForge
             if (string.IsNullOrEmpty(title)) title = "О программе IconForge";
 
             string version = _resourceLoader.GetString("AboutVersion");
-            if (string.IsNullOrEmpty(version)) version = "Версия 1.0.2 (WinUI 3 / .NET 8)";
+            if (string.IsNullOrEmpty(version)) version = "Версия 1.0.3 (WinUI 3 / .NET 10)";
 
             string desc = _resourceLoader.GetString("AboutDescription");
             if (string.IsNullOrEmpty(desc)) desc = "Нативный мультиформатный генератор иконных пакетов для Windows, Web, macOS и Android.";
@@ -731,9 +731,17 @@ namespace IconForge
                 Foreground = (Brush)Application.Current.Resources["TextFillColorSecondaryBrush"]
             };
 
+            var gitHubButton = new HyperlinkButton
+            {
+                Content = "GitHub: https://github.com/Almanex/IconForge",
+                NavigateUri = new Uri("https://github.com/Almanex/IconForge"),
+                Margin = new Thickness(0, 4, 0, 0)
+            };
+
             contentStack.Children.Add(verText);
             contentStack.Children.Add(descText);
             contentStack.Children.Add(authorText);
+            contentStack.Children.Add(gitHubButton);
 
             var dialog = new ContentDialog
             {
