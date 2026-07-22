@@ -18,7 +18,7 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <TitleBar x:Name="AppTitleBar" Title="SnapIcon" Height="36" Style="{ThemeResource DefaultTitleBarStyle}" Grid.Row="0">
+        <TitleBar x:Name="AppTitleBar" Title="SnapIcon">
             <TitleBar.IconSource>
                 <ImageIconSource x:Name="TitleBarImageIconSource" />
             </TitleBar.IconSource>

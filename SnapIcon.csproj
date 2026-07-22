@@ -75,12 +75,14 @@
   <PropertyGroup>
     <DefaultLanguage>en-US</DefaultLanguage>
     <AppxDefaultResourceQualifiers>Language=en-US;ru-RU;de-DE</AppxDefaultResourceQualifiers>
-    <PublishReadyToRun Condition="'$(Configuration)' == 'Debug'">False</PublishReadyToRun>
-    <PublishReadyToRun Condition="'$(Configuration)' != 'Debug'">True</PublishReadyToRun>
+    <PublishReadyToRun Condition="'$(Configuration)' != 'Debug'">False</PublishReadyToRun>
     <PublishTrimmed Condition="'$(Configuration)' == 'Debug'">False</PublishTrimmed>
     <PublishTrimmed Condition="'$(Configuration)' != 'Debug'">False</PublishTrimmed>
     <PublishSingleFile Condition="'$(Configuration)' != 'Debug'">True</PublishSingleFile>
     <IncludeAllContentForSelfExtract Condition="'$(Configuration)' != 'Debug'">True</IncludeAllContentForSelfExtract>
+    <IncludeNativeLibrariesForSelfExtract Condition="'$(Configuration)' != 'Debug'">True</IncludeNativeLibrariesForSelfExtract>
+    <DebugType Condition="'$(Configuration)' != 'Debug'">none</DebugType>
+    <CopyOutputSymbolsToPublishDirectory Condition="'$(Configuration)' != 'Debug'">false</CopyOutputSymbolsToPublishDirectory>
     <SatelliteResourceLanguages>en-US;ru-RU;de-DE</SatelliteResourceLanguages>
   </PropertyGroup>
 
