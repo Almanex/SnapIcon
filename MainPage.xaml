@@ -484,6 +484,7 @@
 
                         <!-- 5. System Integration Card -->
                         <Border 
+                            x:Name="SystemIntegrationCard"
                             Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                             BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                             BorderThickness="1"

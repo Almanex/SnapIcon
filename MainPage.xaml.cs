@@ -76,14 +76,22 @@ namespace SnapIcon
 
         private void MainPage_Loaded(object sender, RoutedEventArgs e)
         {
-            // Initialize Context Menu Toggle state from Registry
-            try
+            if (IsPackaged())
             {
-                ContextMenuToggle.IsOn = ShellIntegration.IsRegistered();
+                // Completely hide System Integration section in packaged (MSIX) version
+                SystemIntegrationCard.Visibility = Visibility.Collapsed;
             }
-            catch
+            else
             {
-                ContextMenuToggle.IsEnabled = false;
+                SystemIntegrationCard.Visibility = Visibility.Visible;
+                try
+                {
+                    ContextMenuToggle.IsOn = ShellIntegration.IsRegistered();
+                }
+                catch
+                {
+                    ContextMenuToggle.IsEnabled = false;
+                }
             }
         }
 
