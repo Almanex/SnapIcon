@@ -8,7 +8,7 @@
 [![Platform: Windows](https://img.shields.io/badge/Platform-Windows%2010%20%2F%2011-blue)](https://www.microsoft.com/windows)
 [![Framework: .NET 8.0](https://img.shields.io/badge/Framework-.NET%208.0-blue)](https://dotnet.microsoft.com/download)
 [![UI: WinUI 3](https://img.shields.io/badge/UI-WinUI%203-blue)](https://learn.microsoft.com/windows/apps/winui/winui3/)
-[![Release: v1.0.2](https://img.shields.io/badge/Release-v1.0.2-brightgreen)](https://github.com/Almanex/icoboo/releases/tag/v1.0.2)
+[![Release: v1.0.3](https://img.shields.io/badge/Release-v1.0.3-brightgreen)](https://github.com/Almanex/icoboo/releases/tag/v1.0.3)
 
 IconForge is a lightweight, native Windows 11 application built with C# and WinUI 3 (Windows App SDK). Out of the box, it features complete tri-lingual support (English, Russian, German) and is designed for automated generation of icon packages for Windows (`.ico`, `Assets`), Web (`Favicon Pack`), macOS (`.icns`), and Android (`Adaptive Icons`) from a single source image (PNG, SVG, or ICO).
 
