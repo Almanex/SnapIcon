@@ -48,7 +48,7 @@
     <Content Include="Assets\StoreLogo.scale-200.png" />
     <Content Include="Assets\StoreLogo.scale-400.png" />
     <Content Include="Assets\StoreLogo.png" />
-    <Content Include="Assets\AppIcon.ico" />
+    <EmbeddedResource Include="Assets\AppIcon.ico" />
     <Content Include="Assets\Wide310x150Logo.scale-200.png" />
     <Content Include="Assets\Wide310x150Logo.png" />
   </ItemGroup>
