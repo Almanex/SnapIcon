@@ -19,6 +19,7 @@ namespace IconForge
     public sealed partial class MainPage : Page
     {
         private string? _selectedInputPath;
+        private readonly List<string> _batchInputPaths = new();
         private string? _selectedOutputPath;
         private string? _selectedBgImagePath;
         private readonly IconProcessor _processor = new();
@@ -95,10 +96,27 @@ namespace IconForge
             if (e.DataView.Contains(StandardDataFormats.StorageItems))
             {
                 var items = await e.DataView.GetStorageItemsAsync();
-                if (items.Count > 0)
+                var validPaths = new List<string>();
+                foreach (var item in items)
                 {
-                    string filePath = items[0].Path;
-                    LoadFile(filePath);
+                    string ext = Path.GetExtension(item.Path).ToLowerInvariant();
+                    if (ext == ".png" || ext == ".svg" || ext == ".ico")
+                    {
+                        validPaths.Add(item.Path);
+                    }
+                }
+
+                if (validPaths.Count == 1)
+                {
+                    _batchInputPaths.Clear();
+                    _batchInputPaths.Add(validPaths[0]);
+                    LoadFile(validPaths[0]);
+                }
+                else if (validPaths.Count > 1)
+                {
+                    _batchInputPaths.Clear();
+                    _batchInputPaths.AddRange(validPaths);
+                    LoadBatchFiles(validPaths);
                 }
             }
         }
@@ -196,9 +214,42 @@ namespace IconForge
             UpdateLivePreviews();
         }
 
+        private void LoadBatchFiles(List<string> filePaths)
+        {
+            if (filePaths == null || filePaths.Count == 0) return;
+            string firstPath = filePaths[0];
+
+            _selectedInputPath = firstPath;
+            FileNameTextBlock.Text = $"Пакетный режим ({filePaths.Count} файлов)";
+            FileTypeTextBlock.Text = $"{filePaths.Count} файлов выбрано для генерации";
+            FileSizeTextBlock.Text = "Пакетная обработка";
+
+            IcoExtractCard.Visibility = Visibility.Collapsed;
+
+            try
+            {
+                string ext = Path.GetExtension(firstPath).ToLowerInvariant();
+                if (ext == ".png" || ext == ".ico") PreviewImage.Source = new BitmapImage(new Uri(firstPath));
+                else if (ext == ".svg") PreviewImage.Source = new SvgImageSource(new Uri(firstPath));
+            }
+            catch { PreviewImage.Source = null; }
+
+            if (string.IsNullOrEmpty(_selectedOutputPath))
+            {
+                string dir = Path.GetDirectoryName(firstPath) ?? Environment.GetFolderPath(Environment.SpecialFolder.MyPictures);
+                _selectedOutputPath = Path.Combine(dir, "IconForge_Batch_Output");
+                OutputDirTextBox.Text = _selectedOutputPath;
+            }
+
+            DropZoneEmptyState.Visibility = Visibility.Collapsed;
+            DropZoneLoadedState.Visibility = Visibility.Visible;
+            UpdateLivePreviews();
+        }
+
         private void RemoveFileButton_Click(object sender, RoutedEventArgs e)
         {
             _selectedInputPath = null;
+            _batchInputPaths.Clear();
             PreviewImage.Source = null;
             
             DropZoneLoadedState.Visibility = Visibility.Collapsed;
@@ -217,11 +268,24 @@ namespace IconForge
             picker.SuggestedStartLocation = PickerLocationId.PicturesLibrary;
             picker.FileTypeFilter.Add(".png");
             picker.FileTypeFilter.Add(".svg");
+            picker.FileTypeFilter.Add(".ico");
 
-            var file = await picker.PickSingleFileAsync();
-            if (file != null)
+            var files = await picker.PickMultipleFilesAsync();
+            if (files != null && files.Count > 0)
             {
-                LoadFile(file.Path);
+                var validPaths = files.Select(f => f.Path).ToList();
+                if (validPaths.Count == 1)
+                {
+                    _batchInputPaths.Clear();
+                    _batchInputPaths.Add(validPaths[0]);
+                    LoadFile(validPaths[0]);
+                }
+                else
+                {
+                    _batchInputPaths.Clear();
+                    _batchInputPaths.AddRange(validPaths);
+                    LoadBatchFiles(validPaths);
+                }
             }
         }
 
@@ -367,6 +431,12 @@ namespace IconForge
             LogTextBlock.Text = "";
             ProgressCard.Visibility = Visibility.Visible;
 
+            ShapeMask shapeMask = ShapeMask.None;
+            if (ShapeMaskComboBox?.SelectedItem is ComboBoxItem maskItem && Enum.TryParse<ShapeMask>(maskItem.Tag?.ToString(), out var mask))
+            {
+                shapeMask = mask;
+            }
+
             var options = new IconProcessor.ProcessingOptions
             {
                 InputPath = _selectedInputPath,
@@ -385,30 +455,64 @@ namespace IconForge
                 TintColorHex = TintColorTextBox.Text.Trim(),
                 CornerRadiusPercent = (float)CornerRadiusSlider.Value,
                 PaddingPercent = (float)PaddingSlider.Value,
-                HasDropShadow = DropShadowCheckBox.IsChecked == true
+                HasDropShadow = DropShadowCheckBox.IsChecked == true,
+                AutoCropTransparentMargins = AutoCropCheckBox?.IsChecked == true,
+                SelectedShapeMask = shapeMask
             };
 
             var startTime = DateTime.Now;
 
             try
             {
-                await _processor.ProcessAsync(options, (status, progressValue) =>
+                if (_batchInputPaths.Count > 1)
                 {
-                    // Marshall to UI Thread
-                    DispatcherQueue.TryEnqueue(() =>
-                    {
-                        ProgressStatusTextBlock.Text = status;
-                        GenerationProgressBar.Value = progressValue * 100;
-                        LogTextBlock.Text += $"[{DateTime.Now:HH:mm:ss}] {status}\n";
-                    });
-                });
+                    int batchIndex = 0;
+                    string baseOutputDir = OutputDirTextBox.Text.Trim();
 
-                var elapsed = DateTime.Now - startTime;
-                LogTextBlock.Text += $"========================================\n";
-                LogTextBlock.Text += string.Format(_resourceLoader.GetString("SuccessMessage"), elapsed.TotalMilliseconds) + "\n";
-                
-                // Show completion Toast Notification
-                ShowCompletionToast(_selectedOutputPath);
+                    foreach (var filePath in _batchInputPaths)
+                    {
+                        batchIndex++;
+                        string nameNoExt = Path.GetFileNameWithoutExtension(filePath);
+                        string fileOutputDir = Path.Combine(baseOutputDir, nameNoExt);
+
+                        var itemOptions = options;
+                        itemOptions.InputPath = filePath;
+                        itemOptions.OutputPath = fileOutputDir;
+
+                        await _processor.ProcessAsync(itemOptions, (status, progressValue) =>
+                        {
+                            double totalProgress = ((double)(batchIndex - 1) + progressValue) / _batchInputPaths.Count;
+                            DispatcherQueue.TryEnqueue(() =>
+                            {
+                                ProgressStatusTextBlock.Text = $"[{batchIndex}/{_batchInputPaths.Count}] {nameNoExt}: {status}";
+                                GenerationProgressBar.Value = totalProgress * 100;
+                                LogTextBlock.Text += $"[{DateTime.Now:HH:mm:ss}] [{nameNoExt}] {status}\n";
+                            });
+                        });
+                    }
+
+                    var elapsed = DateTime.Now - startTime;
+                    LogTextBlock.Text += $"========================================\n";
+                    LogTextBlock.Text += $"Пакетная генерация ({_batchInputPaths.Count} файлов) успешно завершена за {elapsed.TotalMilliseconds:N0} мс!\n";
+                    ShowCompletionToast(_selectedOutputPath);
+                }
+                else
+                {
+                    await _processor.ProcessAsync(options, (status, progressValue) =>
+                    {
+                        DispatcherQueue.TryEnqueue(() =>
+                        {
+                            ProgressStatusTextBlock.Text = status;
+                            GenerationProgressBar.Value = progressValue * 100;
+                            LogTextBlock.Text += $"[{DateTime.Now:HH:mm:ss}] {status}\n";
+                        });
+                    });
+
+                    var elapsed = DateTime.Now - startTime;
+                    LogTextBlock.Text += $"========================================\n";
+                    LogTextBlock.Text += string.Format(_resourceLoader.GetString("SuccessMessage"), elapsed.TotalMilliseconds) + "\n";
+                    ShowCompletionToast(_selectedOutputPath);
+                }
             }
             catch (Exception ex)
             {
@@ -592,6 +696,12 @@ namespace IconForge
             float rx = CornerRadiusSlider != null ? (float)CornerRadiusSlider.Value : 0;
             float pad = PaddingSlider != null ? (float)PaddingSlider.Value : 0;
             bool shadow = DropShadowCheckBox?.IsChecked == true;
+            bool autoCrop = AutoCropCheckBox?.IsChecked == true;
+            ShapeMask shapeMask = ShapeMask.None;
+            if (ShapeMaskComboBox?.SelectedItem is ComboBoxItem maskItem && Enum.TryParse<ShapeMask>(maskItem.Tag?.ToString(), out var mask))
+            {
+                shapeMask = mask;
+            }
 
             Task.Run(() =>
             {
@@ -609,7 +719,9 @@ namespace IconForge
                         tint,
                         rx,
                         pad,
-                        shadow);
+                        shadow,
+                        autoCrop,
+                        shapeMask);
 
                     byte[] b256 = EncodeSkiaToPngBytes(filtered, 256);
                     byte[] b48 = EncodeSkiaToPngBytes(filtered, 48);

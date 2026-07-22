@@ -248,9 +248,22 @@
 
                             <!-- Toggles -->
                             <StackPanel Spacing="6">
+                                <CheckBox x:Name="AutoCropCheckBox" x:Uid="AutoCropCheckBox" Content="Авто-обрезка прозрачных полей" Click="FilterOption_Changed" />
                                 <CheckBox x:Name="GrayscaleCheckBox" x:Uid="GrayscaleLabel" Content="Черно-белый режим" Click="FilterOption_Changed" />
                                 <CheckBox x:Name="InvertCheckBox" x:Uid="InvertLabel" Content="Инверсия цветов" Click="FilterOption_Changed" />
                                 <CheckBox x:Name="DropShadowCheckBox" x:Uid="DropShadowLabel" Content="Тень (Drop Shadow)" Click="FilterOption_Changed" />
+                            </StackPanel>
+
+                            <!-- Shape Mask Selector -->
+                            <StackPanel Spacing="4">
+                                <TextBlock x:Uid="ShapeMaskLabel" Text="Форма и маска иконки" Style="{ThemeResource CaptionTextBlockStyle}" />
+                                <ComboBox x:Name="ShapeMaskComboBox" HorizontalAlignment="Stretch" SelectedIndex="0" SelectionChanged="FilterOption_Changed">
+                                    <ComboBoxItem Content="Обычный (без маски)" Tag="None" />
+                                    <ComboBoxItem Content="Скверкл (iOS/Android Squircle)" Tag="Squircle" />
+                                    <ComboBoxItem Content="Круг (Circle)" Tag="Circle" />
+                                    <ComboBoxItem Content="Капля (Teardrop)" Tag="Teardrop" />
+                                    <ComboBoxItem Content="Скругленный прямоугольник" Tag="RoundedRect" />
+                                </ComboBox>
                             </StackPanel>
 
                             <!-- Tint Color -->

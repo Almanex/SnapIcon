@@ -278,4 +278,10 @@
   <data name="ContextMenuItemTitle" xml:space="preserve">
     <value>Generate icons in IconForge</value>
   </data>
+  <data name="AutoCropCheckBox.Content" xml:space="preserve">
+    <value>Auto-crop transparent margins</value>
+  </data>
+  <data name="ShapeMaskLabel.Text" xml:space="preserve">
+    <value>Icon shape &amp; mask</value>
+  </data>
 </root>

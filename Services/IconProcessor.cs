@@ -8,6 +8,15 @@ using IconForge.Helpers;
 
 namespace IconForge.Services
 {
+    public enum ShapeMask
+    {
+        None,
+        Squircle,
+        Circle,
+        Teardrop,
+        RoundedRect
+    }
+
     public class IconProcessor
     {
         public struct ProcessingOptions
@@ -29,6 +38,8 @@ namespace IconForge.Services
             public float CornerRadiusPercent { get; set; }
             public float PaddingPercent { get; set; }
             public bool HasDropShadow { get; set; }
+            public bool AutoCropTransparentMargins { get; set; }
+            public ShapeMask SelectedShapeMask { get; set; }
         }
 
         public async Task ProcessAsync(ProcessingOptions options, Action<string, double> onProgress)
@@ -54,7 +65,9 @@ namespace IconForge.Services
                     options.TintColorHex,
                     options.CornerRadiusPercent,
                     options.PaddingPercent,
-                    options.HasDropShadow);
+                    options.HasDropShadow,
+                    options.AutoCropTransparentMargins,
+                    options.SelectedShapeMask);
 
                 // Parse background color for Android
                 SKColor androidBgColor = SKColors.White;
@@ -310,7 +323,6 @@ namespace IconForge.Services
                     var rect = new SKRect(0, 0, 1024, 1024);
                     using var paint = new SKPaint 
                     { 
-                        FilterQuality = SKFilterQuality.High,
                         IsAntialias = true 
                     };
                     canvas.DrawBitmap(original, rect, paint);
@@ -327,7 +339,6 @@ namespace IconForge.Services
 
             using var highPaint = new SKPaint
             {
-                FilterQuality = SKFilterQuality.High,
                 IsAntialias = true
             };
 
@@ -420,7 +431,6 @@ namespace IconForge.Services
                 
                 using var paint = new SKPaint
                 {
-                    FilterQuality = SKFilterQuality.High,
                     IsAntialias = true
                 };
                 
@@ -441,7 +451,6 @@ namespace IconForge.Services
                     var rect = new SKRect(0, 0, densitySize, densitySize);
                     using var paint = new SKPaint
                     {
-                        FilterQuality = SKFilterQuality.High,
                         IsAntialias = true
                     };
                     canvas.DrawBitmap(backgroundImage, rect, paint);
@@ -470,7 +479,7 @@ namespace IconForge.Services
                 if (bgImage != null)
                 {
                     var rect = new SKRect(0, 0, legacySize, legacySize);
-                    using var paint = new SKPaint { FilterQuality = SKFilterQuality.High, IsAntialias = true };
+                    using var paint = new SKPaint { IsAntialias = true };
                     canvas.DrawBitmap(bgImage, rect, paint);
                 }
                 else
@@ -483,7 +492,7 @@ namespace IconForge.Services
                 int offset = (legacySize - innerSize) / 2;
                 var logoRect = new SKRect(offset, offset, offset + innerSize, offset + innerSize);
                 
-                using var logoPaint = new SKPaint { FilterQuality = SKFilterQuality.High, IsAntialias = true };
+                using var logoPaint = new SKPaint { IsAntialias = true };
                 canvas.DrawBitmap(baseBitmap, logoRect, logoPaint);
             }
             return launcher;
@@ -497,7 +506,7 @@ namespace IconForge.Services
                 if (bgImage != null)
                 {
                     var rect = new SKRect(0, 0, 512, 512);
-                    using var paint = new SKPaint { FilterQuality = SKFilterQuality.High, IsAntialias = true };
+                    using var paint = new SKPaint { IsAntialias = true };
                     canvas.DrawBitmap(bgImage, rect, paint);
                 }
                 else
@@ -510,10 +519,113 @@ namespace IconForge.Services
                 int offset = (512 - innerSize) / 2;
                 var logoRect = new SKRect(offset, offset, offset + innerSize, offset + innerSize);
                 
-                using var logoPaint = new SKPaint { FilterQuality = SKFilterQuality.High, IsAntialias = true };
+                using var logoPaint = new SKPaint { IsAntialias = true };
                 canvas.DrawBitmap(baseBitmap, logoRect, logoPaint);
             }
             return playIcon;
+        }
+
+        public static SKBitmap TrimTransparentMargins(SKBitmap source)
+        {
+            if (source == null) return new SKBitmap(1, 1);
+
+            int minX = source.Width;
+            int minY = source.Height;
+            int maxX = -1;
+            int maxY = -1;
+
+            unsafe
+            {
+                var ptr = (byte*)source.GetPixels();
+                if (ptr == null) return source.Copy();
+
+                int bpp = source.BytesPerPixel;
+                int width = source.Width;
+                int height = source.Height;
+                int rowBytes = source.RowBytes;
+
+                for (int y = 0; y < height; y++)
+                {
+                    byte* row = ptr + y * rowBytes;
+                    for (int x = 0; x < width; x++)
+                    {
+                        byte alpha = row[x * bpp + 3];
+                        if (alpha > 8)
+                        {
+                            if (x < minX) minX = x;
+                            if (x > maxX) maxX = x;
+                            if (y < minY) minY = y;
+                            if (y > maxY) maxY = y;
+                        }
+                    }
+                }
+            }
+
+            if (maxX < minX || maxY < minY)
+            {
+                return source.Copy();
+            }
+
+            int cropW = maxX - minX + 1;
+            int cropH = maxY - minY + 1;
+
+            var cropped = new SKBitmap(cropW, cropH);
+            using (var canvas = new SKCanvas(cropped))
+            {
+                canvas.Clear(SKColors.Transparent);
+                var srcRect = new SKRect(minX, minY, maxX + 1, maxY + 1);
+                var dstRect = new SKRect(0, 0, cropW, cropH);
+                using var paint = new SKPaint { IsAntialias = true };
+                canvas.DrawBitmap(source, srcRect, dstRect, paint);
+            }
+            return cropped;
+        }
+
+        public static SKBitmap ApplyShapeMask(SKBitmap source, ShapeMask mask)
+        {
+            if (source == null || mask == ShapeMask.None) return source?.Copy() ?? new SKBitmap(256, 256);
+
+            int w = source.Width;
+            int h = source.Height;
+            var masked = new SKBitmap(w, h);
+
+            using (var canvas = new SKCanvas(masked))
+            {
+                canvas.Clear(SKColors.Transparent);
+                using var path = new SKPath();
+
+                float cx = w / 2f;
+                float cy = h / 2f;
+
+                switch (mask)
+                {
+                    case ShapeMask.Circle:
+                        path.AddCircle(cx, cy, Math.Min(cx, cy) - 1f);
+                        break;
+
+                    case ShapeMask.Squircle:
+                        float r = Math.Min(w, h) * 0.22f;
+                        path.AddRoundRect(new SKRect(0, 0, w, h), r, r);
+                        break;
+
+                    case ShapeMask.Teardrop:
+                        float trR = Math.Min(w, h) * 0.45f;
+                        path.AddCircle(cx, cy, trR);
+                        path.AddRoundRect(new SKRect(cx - trR, cy - trR, cx, cy), trR * 0.3f, trR * 0.3f);
+                        break;
+
+                    case ShapeMask.RoundedRect:
+                        float rr = Math.Min(w, h) * 0.12f;
+                        path.AddRoundRect(new SKRect(0, 0, w, h), rr, rr);
+                        break;
+                }
+
+                canvas.ClipPath(path, antialias: true);
+                using var paint = new SKPaint { IsAntialias = true };
+                canvas.DrawBitmap(source, 0, 0, paint);
+            }
+
+            return masked;
         }
 
         public static SKBitmap ApplyFiltersAndStyling(
@@ -525,12 +637,15 @@ namespace IconForge.Services
             string? tintColorHex = null,
             float cornerRadiusPercent = 0,
             float paddingPercent = 0,
-            bool hasDropShadow = false)
+            bool hasDropShadow = false,
+            bool autoCrop = false,
+            ShapeMask shapeMask = ShapeMask.None)
         {
             if (source == null) return new SKBitmap(256, 256);
 
-            int width = source.Width;
-            int height = source.Height;
+            using SKBitmap inputBitmap = autoCrop ? TrimTransparentMargins(source) : source.Copy();
+            int width = inputBitmap.Width;
+            int height = inputBitmap.Height;
 
             // 1. Create filtered base
             var filtered = new SKBitmap(width, height);
@@ -596,50 +711,57 @@ namespace IconForge.Services
                     paint.ColorFilter = current;
                 }
 
-                canvas.DrawBitmap(source, new SKRect(0, 0, width, height), paint);
+                canvas.DrawBitmap(inputBitmap, new SKRect(0, 0, width, height), paint);
             }
 
-            if (cornerRadiusPercent <= 0 && paddingPercent <= 0 && !hasDropShadow)
+            SKBitmap result = filtered;
+            if (cornerRadiusPercent > 0 || paddingPercent > 0 || hasDropShadow)
             {
-                return filtered;
-            }
-
-            var finalBitmap = new SKBitmap(width, height);
-            using (var canvas = new SKCanvas(finalBitmap))
-            {
-                canvas.Clear(SKColors.Transparent);
-
-                float pad = (Math.Min(width, height) * (paddingPercent / 100f)) / 2f;
-                var drawRect = new SKRect(pad, pad, width - pad, height - pad);
-                float rx = drawRect.Width * (cornerRadiusPercent / 100f);
-                float ry = drawRect.Height * (cornerRadiusPercent / 100f);
-
-                if (hasDropShadow)
+                var finalBitmap = new SKBitmap(width, height);
+                using (var canvas = new SKCanvas(finalBitmap))
                 {
-                    using var shadowPaint = new SKPaint
+                    canvas.Clear(SKColors.Transparent);
+
+                    float pad = (Math.Min(width, height) * (paddingPercent / 100f)) / 2f;
+                    var drawRect = new SKRect(pad, pad, width - pad, height - pad);
+                    float rx = drawRect.Width * (cornerRadiusPercent / 100f);
+                    float ry = drawRect.Height * (cornerRadiusPercent / 100f);
+
+                    if (hasDropShadow)
                     {
-                        IsAntialias = true,
-                        ImageFilter = SKImageFilter.CreateDropShadow(0, 8, 12, 12, new SKColor(0, 0, 0, 100))
-                    };
-                    using var rpath = new SKPath();
-                    rpath.AddRoundRect(drawRect, rx, ry);
-                    canvas.DrawPath(rpath, shadowPaint);
+                        using var shadowPaint = new SKPaint
+                        {
+                            IsAntialias = true,
+                            ImageFilter = SKImageFilter.CreateDropShadow(0, 8, 12, 12, new SKColor(0, 0, 0, 100))
+                        };
+                        using var rpath = new SKPath();
+                        rpath.AddRoundRect(drawRect, rx, ry);
+                        canvas.DrawPath(rpath, shadowPaint);
+                    }
+
+                    using var fillPaint = new SKPaint { IsAntialias = true };
+
+                    if (cornerRadiusPercent > 0)
+                    {
+                        using var path = new SKPath();
+                        path.AddRoundRect(drawRect, rx, ry);
+                        canvas.ClipPath(path, antialias: true);
+                    }
+
+                    canvas.DrawBitmap(filtered, drawRect, fillPaint);
                 }
 
-                using var fillPaint = new SKPaint { IsAntialias = true };
-
-                if (cornerRadiusPercent > 0)
-                {
-                    using var path = new SKPath();
-                    path.AddRoundRect(drawRect, rx, ry);
-                    canvas.ClipPath(path, antialias: true);
-                }
-
-                canvas.DrawBitmap(filtered, drawRect, fillPaint);
+                filtered.Dispose();
+                result = finalBitmap;
             }
 
-            filtered.Dispose();
-            return finalBitmap;
+            if (shapeMask != ShapeMask.None)
+            {
+                using var unmasked = result;
+                result = ApplyShapeMask(unmasked, shapeMask);
+            }
+
+            return result;
         }
 
         private static void GenerateMacIcns(SKBitmap baseBitmap, string outputPath)
