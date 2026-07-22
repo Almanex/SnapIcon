@@ -320,12 +320,15 @@ namespace IconForge.Services
                 using (var canvas = new SKCanvas(baseBitmap))
                 {
                     canvas.Clear(SKColors.Transparent);
-                    var rect = new SKRect(0, 0, 1024, 1024);
-                    using var paint = new SKPaint 
-                    { 
-                        IsAntialias = true 
-                    };
-                    canvas.DrawBitmap(original, rect, paint);
+                    float scale = Math.Min(1024f / original.Width, 1024f / original.Height);
+                    float drawW = original.Width * scale;
+                    float drawH = original.Height * scale;
+                    float dx = (1024f - drawW) / 2f;
+                    float dy = (1024f - drawH) / 2f;
+
+                    var dstRect = new SKRect(dx, dy, dx + drawW, dy + drawH);
+                    using var img = SKImage.FromBitmap(original);
+                    canvas.DrawImage(img, dstRect, new SKSamplingOptions(SKCubicResampler.CatmullRom), null);
                 }
                 original.Dispose();
                 return baseBitmap;
@@ -334,13 +337,12 @@ namespace IconForge.Services
 
         public static SKBitmap ResizeBitmap(SKBitmap source, int width, int height, bool applySharpening)
         {
+            if (source == null) return new SKBitmap(width, height);
+
             SKBitmap current = source;
             bool isTemporary = false;
 
-            using var highPaint = new SKPaint
-            {
-                IsAntialias = true
-            };
+            var sampling = new SKSamplingOptions(SKCubicResampler.CatmullRom);
 
             // Progressive multi-octave downscaling (1024 -> 512 -> 256 -> 128 -> 64 -> 32 -> 16)
             while (current.Width >= width * 2 && current.Height >= height * 2)
@@ -351,9 +353,9 @@ namespace IconForge.Services
                 using (var canvas = new SKCanvas(stepBmp))
                 {
                     canvas.Clear(SKColors.Transparent);
-                    var srcRect = new SKRect(0, 0, current.Width, current.Height);
                     var dstRect = new SKRect(0, 0, nextW, nextH);
-                    canvas.DrawBitmap(current, srcRect, dstRect, highPaint);
+                    using var img = SKImage.FromBitmap(current);
+                    canvas.DrawImage(img, dstRect, sampling, null);
                 }
                 if (isTemporary)
                 {
@@ -367,9 +369,9 @@ namespace IconForge.Services
             using (var canvas = new SKCanvas(finalBmp))
             {
                 canvas.Clear(SKColors.Transparent);
-                var srcRect = new SKRect(0, 0, current.Width, current.Height);
                 var dstRect = new SKRect(0, 0, width, height);
-                canvas.DrawBitmap(current, srcRect, dstRect, highPaint);
+                using var img = SKImage.FromBitmap(current);
+                canvas.DrawImage(img, dstRect, sampling, null);
 
                 if (applySharpening && width <= 48)
                 {
@@ -594,35 +596,45 @@ namespace IconForge.Services
                 canvas.Clear(SKColors.Transparent);
                 using var path = new SKPath();
 
+                float minDim = Math.Min(w, h);
                 float cx = w / 2f;
                 float cy = h / 2f;
 
                 switch (mask)
                 {
                     case ShapeMask.Circle:
-                        path.AddCircle(cx, cy, Math.Min(cx, cy) - 1f);
+                        path.AddCircle(cx, cy, minDim / 2f - 1f);
                         break;
 
                     case ShapeMask.Squircle:
-                        float r = Math.Min(w, h) * 0.22f;
-                        path.AddRoundRect(new SKRect(0, 0, w, h), r, r);
+                        float sqR = minDim * 0.24f;
+                        path.AddRoundRect(new SKRect(0, 0, w, h), sqR, sqR);
                         break;
 
                     case ShapeMask.Teardrop:
-                        float trR = Math.Min(w, h) * 0.45f;
-                        path.AddCircle(cx, cy, trR);
-                        path.AddRoundRect(new SKRect(cx - trR, cy - trR, cx, cy), trR * 0.3f, trR * 0.3f);
+                        float tdR = minDim / 2f;
+                        var tdRect = new SKRoundRect();
+                        var radiiPoints = new SKPoint[]
+                        {
+                            new SKPoint(tdR, tdR),
+                            new SKPoint(tdR * 0.15f, tdR * 0.15f),
+                            new SKPoint(tdR, tdR),
+                            new SKPoint(tdR, tdR)
+                        };
+                        tdRect.SetRectRadii(new SKRect(0, 0, w, h), radiiPoints);
+                        path.AddRoundRect(tdRect);
                         break;
 
                     case ShapeMask.RoundedRect:
-                        float rr = Math.Min(w, h) * 0.12f;
-                        path.AddRoundRect(new SKRect(0, 0, w, h), rr, rr);
+                        float rrR = minDim * 0.15f;
+                        path.AddRoundRect(new SKRect(0, 0, w, h), rrR, rrR);
                         break;
                 }
 
                 canvas.ClipPath(path, antialias: true);
-                using var paint = new SKPaint { IsAntialias = true };
-                canvas.DrawBitmap(source, 0, 0, paint);
+                using var img = SKImage.FromBitmap(source);
+                var sampling = new SKSamplingOptions(SKCubicResampler.CatmullRom);
+                canvas.DrawImage(img, new SKRect(0, 0, w, h), sampling, null);
             }
 
             return masked;
@@ -722,10 +734,11 @@ namespace IconForge.Services
                 {
                     canvas.Clear(SKColors.Transparent);
 
-                    float pad = (Math.Min(width, height) * (paddingPercent / 100f)) / 2f;
+                    float minDim = Math.Min(width, height);
+                    float pad = (minDim * (paddingPercent / 100f)) / 2f;
                     var drawRect = new SKRect(pad, pad, width - pad, height - pad);
-                    float rx = drawRect.Width * (cornerRadiusPercent / 100f);
-                    float ry = drawRect.Height * (cornerRadiusPercent / 100f);
+                    
+                    float r = (Math.Min(drawRect.Width, drawRect.Height) / 2f) * Math.Min(1.0f, cornerRadiusPercent / 50f);
 
                     if (hasDropShadow)
                     {
@@ -735,20 +748,34 @@ namespace IconForge.Services
                             ImageFilter = SKImageFilter.CreateDropShadow(0, 8, 12, 12, new SKColor(0, 0, 0, 100))
                         };
                         using var rpath = new SKPath();
-                        rpath.AddRoundRect(drawRect, rx, ry);
+                        if (cornerRadiusPercent >= 49f)
+                        {
+                            rpath.AddCircle(drawRect.MidX, drawRect.MidY, Math.Min(drawRect.Width, drawRect.Height) / 2f);
+                        }
+                        else
+                        {
+                            rpath.AddRoundRect(drawRect, r, r);
+                        }
                         canvas.DrawPath(rpath, shadowPaint);
                     }
-
-                    using var fillPaint = new SKPaint { IsAntialias = true };
 
                     if (cornerRadiusPercent > 0)
                     {
                         using var path = new SKPath();
-                        path.AddRoundRect(drawRect, rx, ry);
+                        if (cornerRadiusPercent >= 49f)
+                        {
+                            path.AddCircle(drawRect.MidX, drawRect.MidY, Math.Min(drawRect.Width, drawRect.Height) / 2f);
+                        }
+                        else
+                        {
+                            path.AddRoundRect(drawRect, r, r);
+                        }
                         canvas.ClipPath(path, antialias: true);
                     }
 
-                    canvas.DrawBitmap(filtered, drawRect, fillPaint);
+                    using var img = SKImage.FromBitmap(filtered);
+                    var sampling = new SKSamplingOptions(SKCubicResampler.CatmullRom);
+                    canvas.DrawImage(img, drawRect, sampling, null);
                 }
 
                 filtered.Dispose();
