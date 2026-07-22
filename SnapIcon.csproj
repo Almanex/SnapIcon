@@ -75,21 +75,12 @@
   <PropertyGroup>
     <DefaultLanguage>en-US</DefaultLanguage>
     <AppxDefaultResourceQualifiers>Language=en-US;ru-RU;de-DE</AppxDefaultResourceQualifiers>
-    <PublishReadyToRun Condition="'$(Configuration)' != 'Debug'">False</PublishReadyToRun>
+    <PublishReadyToRun Condition="'$(Configuration)' != 'Debug'">True</PublishReadyToRun>
     <PublishTrimmed Condition="'$(Configuration)' == 'Debug'">False</PublishTrimmed>
     <PublishTrimmed Condition="'$(Configuration)' != 'Debug'">False</PublishTrimmed>
     <PublishSingleFile Condition="'$(Configuration)' != 'Debug'">True</PublishSingleFile>
-    <IncludeAllContentForSelfExtract Condition="'$(Configuration)' != 'Debug'">True</IncludeAllContentForSelfExtract>
     <IncludeNativeLibrariesForSelfExtract Condition="'$(Configuration)' != 'Debug'">True</IncludeNativeLibrariesForSelfExtract>
-    <DebugType Condition="'$(Configuration)' != 'Debug'">none</DebugType>
-    <CopyOutputSymbolsToPublishDirectory Condition="'$(Configuration)' != 'Debug'">false</CopyOutputSymbolsToPublishDirectory>
     <SatelliteResourceLanguages>en-US;ru-RU;de-DE</SatelliteResourceLanguages>
   </PropertyGroup>
 
-  <!-- Target to bundle generated PRI file inside single-file executable to prevent crashes when renamed -->
-  <Target Name="BundlePriInSingleFile" BeforeTargets="GenerateSingleFileBundle" Condition="'$(PublishSingleFile)' == 'true'">
-    <ItemGroup>
-      <ResolvedFileToPublish Include="$(TargetDir)SnapIcon.pri" RelativePath="resources.pri" Condition="Exists('$(TargetDir)SnapIcon.pri')" />
-    </ItemGroup>
-  </Target>
 </Project>

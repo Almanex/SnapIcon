@@ -413,9 +413,14 @@
                             
                             <StackPanel Padding="16" Spacing="12">
                                 <Grid>
-                                    <TextBlock x:Uid="PreviewGridHeader" Text="Предпросмотр по размерам" Style="{ThemeResource SubtitleTextBlockStyle}" FontWeight="Medium" />
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
                                     
-                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="6">
+                                    <TextBlock Grid.Column="0" x:Uid="PreviewGridHeader" Text="Предпросмотр по размерам" Style="{ThemeResource SubtitleTextBlockStyle}" FontWeight="Medium" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" Margin="0,0,12,0" />
+                                    
+                                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
                                         <!-- Zoom Toggle -->
                                         <Button x:Name="PreviewZoom1xBtn" Height="28" Padding="6,0" Click="PreviewZoom_Click" Tag="1x" ToolTipService.ToolTip="Масштаб 1:1 (Реальный)">
                                             <TextBlock Text="1x" FontSize="11" FontWeight="SemiBold" />
